@@ -1,0 +1,1 @@
+# File per implementare l'agente llm per risolvere il problema dello zaino
