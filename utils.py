@@ -1,6 +1,9 @@
 # File per le funzioni utilizzate in tutto il progetto (inizializzazione delle istanze dei problemi come il knapsack
 # o funzioni di valutazione sul tempo o sulla qualità delle soluzioni)
 
+import json
+from openai import OpenAI
+
 def get_knapsack_instance():
     """
     Returns the knapsack instance to be solved by the agents.
@@ -43,3 +46,57 @@ def get_knapsack_instance():
         'items': items,
         'capacity': capacity
     }
+
+
+def get_openai_client(api_key="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"):
+    """
+    Returns the OpenAI client (takes as input the api key).
+    """
+    return OpenAI(api_key=api_key)
+
+
+def interrogate_4o(client, model, conversation, response_format):
+    """
+    Interrogates the 4o LLM with the given prompt.
+
+    Args:
+        client (OpenAI): The OpenAI client.
+        model (str): if "mini" then gpt-4o-mini is used, otherwise gpt-4o.
+        conversation (list): The conversation history.
+        response_format (BaseModel): The response format (schema for structured output).
+    """
+    completion = client.beta.chat.completions.parse(
+        model="gpt-4o-mini" if model == "mini" else "gpt-4o",
+        messages=conversation,
+        response_format=response_format,
+    )
+    return completion.choices[0].message.parsed
+
+
+def interrogate_o1(client, model, conversation, response_checking_schema):
+    """
+    Interrogates the o1 LLM with the given prompt.
+
+    Args:
+        client (OpenAI): The OpenAI client.
+        model (str): if "mini" then o1-mini is used, otherwise o1.
+        conversation (list): The conversation history (includes only user and assistant messages).
+        response_format (BaseModel): The response format (schema for structured output).
+        response_checking_schema (function): It is a boolean function which is applied to the response to check if it respects the schema required. If the response does not pass the check, the LLM is asked for another response up until a total of 5 trials.
+    """
+    trial = 0
+    while trial < 5:
+        completion = client.chat.completions.create(
+            model="o1-mini" if model == "mini" else "o1",
+        messages=conversation,
+    )
+        response = completion.choices[0].message.content
+        checked_response = response_checking_schema(response)       
+        if not checked_response:
+            trial += 1
+            print(f"The LLM response does not adhere to the required schema. Retrying ({trial}/5)")
+        else:       
+            return checked_response
+    raise ValueError("The LLM response does not adhere to the required schema. Aborting.")
+
+    
