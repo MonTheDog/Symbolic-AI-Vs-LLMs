@@ -5,4 +5,4 @@ print("=================================================")
 print("LLMs vs Symbolic AI - Tic Tac Toe")
 print("=================================================")
 
-sttt.runGames(10)
+sttt.run_games(10)

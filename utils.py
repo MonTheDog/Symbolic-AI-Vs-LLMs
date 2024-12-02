@@ -5,10 +5,9 @@ def get_knapsack_instance():
     """
     Returns the knapsack instance to be solved by the agents.
 
-    Returns:
-        dict: A dictionary containing:
-            - 'items': A list of items, each with the attributes 'Name', 'Weight', e 'Value'.
-            - 'capacity': The maximum capacity of the knapsack.
+    :return: A dictionary containing:
+            'items': the list of items, each with the attributes 'Name', 'Weight', and 'Value'.
+            'capacity': the maximum capacity of the knapsack.
     """
     items = [
         {"Name": "Golden Watch", "Weight": 1, "Value": 500},
@@ -43,3 +42,18 @@ def get_knapsack_instance():
         'items': items,
         'capacity': capacity
     }
+
+
+def print_elapsed_time(start, end):
+    """
+    Prints and formats the elapsed time from start to end.\n
+    To get start and end add the following import\n
+    "from timeit import default_timer as timer"\n
+    and call start = timer() at the start and end = timer() at the end
+    :param start: The starting time
+    :param end: The end time
+    """
+    def truncate_float(float_number, decimal_places):
+        multiplier = 10 ** decimal_places
+        return int(float_number * multiplier) / multiplier
+    print("Elapsed Time: " + format(truncate_float((end - start) * 1000, 4), ".4f") + "ms")
