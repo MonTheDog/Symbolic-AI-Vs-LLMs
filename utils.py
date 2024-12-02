@@ -48,7 +48,7 @@ def get_knapsack_instance():
     }
 
 
-def get_openai_client(api_key="YOUR_KEY_HERE"):
+def get_openai_client(api_key="KEY_HERE"):
     """
     Returns the OpenAI client (takes as input the api key).
     """
