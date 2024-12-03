@@ -73,7 +73,7 @@ def interrogate_4o(client, model, conversation, response_format):
     return completion.choices[0].message.parsed
 
 
-def interrogate_o1(client, model, conversation, response_checking_schema):
+def interrogate_o1(client, model, conversation):
     """
     Interrogates the o1 LLM with the given prompt.
 
@@ -82,21 +82,11 @@ def interrogate_o1(client, model, conversation, response_checking_schema):
         model (str): if "mini" then o1-mini is used, otherwise o1.
         conversation (list): The conversation history (includes only user and assistant messages).
         response_format (BaseModel): The response format (schema for structured output).
-        response_checking_schema (function): It is a boolean function which is applied to the response to check if it respects the schema required. If the response does not pass the check, the LLM is asked for another response up until a total of 5 trials.
     """
-    trial = 0
-    while trial < 5:
-        completion = client.chat.completions.create(
-            model="o1-mini" if model == "mini" else "o1",
+    completion = client.chat.completions.create(
+        model="o1-mini" if model == "mini" else "o1",
         messages=conversation,
     )
-        response = completion.choices[0].message.content
-        checked_response = response_checking_schema(response)       
-        if not checked_response:
-            trial += 1
-            print(f"The LLM response does not adhere to the required schema. Retrying ({trial}/5)")
-        else:       
-            return checked_response
-    raise ValueError("The LLM response does not adhere to the required schema. Aborting.")
+    return completion.choices[0].message.content
 
     
