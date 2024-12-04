@@ -7,15 +7,10 @@
 External Dependencies
 """
 import json
-import sys
-import os
-import importlib
 import re
 from pydantic import BaseModel
 import utils
 from timeit import default_timer as timer
-
-
 
 """
 Prompt templates and utility functions
@@ -200,10 +195,26 @@ class KnapsackLLMAgent:
         self.output_schema = KnapsackOutputSchema if model_name == "4o" else None
         self.internal_checking_schema = MAPPING_MODEL_NAME_TO_INTERNAL_CHECKING_SCHEMA[model_name]
 
-        
-    def update_conversation(self, role, content):
-        self.conversation.append({"role": role, "content": content})
+    def reset_conversation(self):
+        """
+        Resets the conversation state for a model.
+        :param model: The model in use
+        """
+        global KNAPSACK_4O_CONVERSATION
+        global KNAPSACK_O1_CONVERSATION
 
+        if self.model_name == "4o":
+            KNAPSACK_4O_CONVERSATION = [
+                {"role": "system",
+                 "content": "You have a set of items. Each item has a weight and a value. You have a knapsack that has a maximum capacity. Your goal is to maximize the value of the items you carry in the knapsack without exceeding the maximum capacity (the subset you select should be that with the maximum total value which is less than or equal to the maximum capacity). In the answer, include a string with the reasoning you used to find the solution and a json string with the solution in the form specified below."},
+            ]
+            self.conversation = KNAPSACK_4O_CONVERSATION
+        elif self.model_name == "o1":
+            KNAPSACK_O1_CONVERSATION = [ ]
+            self.conversation = KNAPSACK_O1_CONVERSATION
+
+    def update_conversation(self, role, content):
+        self.conversation.append({"role": role, "content": str(content)})
 
     def action(self, capacity):
         """
@@ -238,29 +249,11 @@ class KnapsackLLMAgent:
                     total_value = sum(item["Value"] for item in is_valid)
                     is_valid = json.dumps(is_valid)
                 end = timer()
-                utils.print_elapsed_time(start, end)
-                return True, is_valid, reasoning, total_value
+                elapsed_time = utils.print_elapsed_time(start, end)
+                return True, is_valid, reasoning, total_value, elapsed_time
             else:
                 i+=1
                 self.update_conversation("user", feedback_message)
         end = timer()
-        utils.print_elapsed_time(start, end)
-        return False, "No solution found", "No reasoning available", 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        elapsed_time = utils.print_elapsed_time(start, end)
+        return False, "No solution found", "No reasoning available", 0, elapsed_time
