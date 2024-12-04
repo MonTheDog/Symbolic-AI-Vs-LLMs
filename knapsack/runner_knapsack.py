@@ -1,7 +1,7 @@
 # File per eseguire il flusso di esecuzione del problema dello Zaino
 import utils
 import algorithm_knapsack as ak
-import ga_knapsack as ga
+import symbolic_knapsack as sk
 
 print("=================================================")
 print("LLMs vs Symbolic AI - Knapsack Problem")
@@ -16,7 +16,7 @@ print("Optimal Value: ", solution)
 print()
 
 print("================ Genetic Algorithm ================")
-ga.run_ga(knapsack_instance)
+sk.run_ga(knapsack_instance)
 print()
 
 # ...
