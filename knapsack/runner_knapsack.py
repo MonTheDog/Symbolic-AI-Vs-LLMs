@@ -1,7 +1,9 @@
 # File per eseguire il flusso di esecuzione del problema dello Zaino
+
 import utils
 import algorithm_knapsack as ak
 import symbolic_knapsack as sk
+import llm_knapsack as llm
 
 print("=================================================")
 print("LLMs vs Symbolic AI - Knapsack Problem")
@@ -21,4 +23,10 @@ print("Items taken: " + str(sk_items))
 print("Total value: " + str(sk_value))
 print()
 
-# ...
+print("================== LLMs ==================")
+llm_knapsack_agent = llm.KnapsackLLMAgent("4o")
+_, solution, reasoning, total_weight = llm_knapsack_agent.action_loop(knapsack_instance)
+print("Items taken: " + solution)
+print("Reasoning: " + reasoning)
+print("Total value: " + str(total_weight))
+print()

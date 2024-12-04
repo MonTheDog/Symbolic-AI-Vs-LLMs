@@ -12,6 +12,8 @@ import os
 import importlib
 import re
 from pydantic import BaseModel
+import utils
+from timeit import default_timer as timer
 
 
 
@@ -114,29 +116,34 @@ MAPPING_MODEL_NAME_TO_CONVERSATION = {
 Response schemas (currently valid for 4o)
 """
 class KnapsackItemSchema(BaseModel):
-    name: str
-    weight: int
-    value: int
+    Name: str
+    Weight: int
+    Value: int
+
+    def to_dict(self):
+        return self.model_dump()
+    
 
 class KnapsackOutputSchema(BaseModel):
     reasoning: str
     solution: list[KnapsackItemSchema]
+    
 
 
 """
 Response checkers (currently necessary for o1)
 """
-def knapsack_4o_internal_checking_schema(response):
+def knapsack_4o_internal_checking_schema(response, capacity):
     """
     Internal schema: the sum of the weights of the items in the solution is less than or equal to the maximum capacity
     """
-    total_weight = sum(item.weight for item in response.solution)
-    if total_weight > response.capacity:
+    total_weight = sum(item.Weight for item in response.solution)
+    if total_weight > capacity:
         return False, "The total weight of the items in the solution is greater than the maximum capacity. Please provide another solution."
-    return True, ""
+    return json.dumps([item.to_dict() for item in response.solution]), ""
 
 
-def knapsack_o1_internal_checking_schema(response):
+def knapsack_o1_internal_checking_schema(response, capacity):
     """
     Pre-processing step: everything which is not contained in the square brackets is removed.
     Internal schema: - String response can be converted to list of dictionaries with keys name, weight and value
@@ -168,8 +175,8 @@ def knapsack_o1_internal_checking_schema(response):
         if "Value" not in item or not isinstance(item["Value"], (int, float)):
             return False, "An object in the response does not have a key 'Value'. Please provide a list of dictionaries that adheres to the schema."
          
-    total_weight = sum(item.weight for item in response)
-    if total_weight > response.capacity:
+    total_weight = sum(item["Weight"] for item in response)
+    if total_weight > capacity:
         return False, "The total weight of the items in the solution is greater than the maximum capacity. Please provide another solution."
     return response, ""
 
@@ -198,7 +205,7 @@ class KnapsackLLMAgent:
         self.conversation.append({"role": role, "content": content})
 
 
-    def action(self):
+    def action(self, capacity):
         """
         Response generation, internal checking.
         """
@@ -207,25 +214,38 @@ class KnapsackLLMAgent:
         elif self.model_name == "o1":
             response = utils.interrogate_o1(self.client, "mini", self.conversation)
         self.update_conversation("assistant", response)
-        is_valid, feedback_message = self.internal_checking_schema(response)
-        return is_valid, feedback_message
+        is_valid, feedback_message = self.internal_checking_schema(response, capacity)
+        if self.model_name == "4o":
+            return is_valid, feedback_message, response.reasoning
+        elif self.model_name == "o1":
+            return is_valid, feedback_message, "No reasoning available"
 
     
     def action_loop(self, knapsack_instance, max_moves=3):
         """
         Response generation, internal checking.
         """
+        start = timer()
         prompt = knapsack_to_llm_adapter(self.base_prompt, knapsack_instance)
         self.update_conversation("user", prompt)
         i = 0
         while i < max_moves:
-            is_valid, feedback_message = self.action()
+            is_valid, feedback_message, reasoning = self.action(knapsack_instance["capacity"])
             if is_valid:
-                return is_valid
+                if self.model_name == "4o":
+                    total_value = sum(item["Value"] for item in json.loads(is_valid))
+                elif self.model_name == "o1":
+                    total_value = sum(item["Value"] for item in is_valid)
+                    is_valid = json.dumps(is_valid)
+                end = timer()
+                utils.print_elapsed_time(start, end)
+                return True, is_valid, reasoning, total_value
             else:
                 i+=1
                 self.update_conversation("user", feedback_message)
-        return False
+        end = timer()
+        utils.print_elapsed_time(start, end)
+        return False, "No solution found", "No reasoning available", 0
 
 
 
