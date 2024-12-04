@@ -188,24 +188,15 @@ class TicTacToeLLMAgent:
         while i < max_moves:
             is_valid, feedback_message, response = self.action()
             if is_valid:
-                return response.cell_number, response.reasoning
+                if self.model_name == "4o":
+                    return response.cell_number, response.reasoning
+                elif self.model_name == "o1":
+                    return is_valid, "Reasoning not available"
             else:
                 i+=1
                 self.update_conversation("user", feedback_message)
         return 0, ""
         
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
