@@ -1,6 +1,9 @@
 # File per le funzioni utilizzate in tutto il progetto (inizializzazione delle istanze dei problemi come il knapsack
 # o funzioni di valutazione sul tempo o sulla qualità delle soluzioni)
 
+import json
+from openai import OpenAI
+
 def get_knapsack_instance():
     """
     Returns the knapsack instance to be solved by the agents.
@@ -57,3 +60,47 @@ def print_elapsed_time(start, end):
         multiplier = 10 ** decimal_places
         return int(float_number * multiplier) / multiplier
     print("Elapsed Time: " + format(truncate_float((end - start) * 1000, 4), ".4f") + "ms")
+
+
+def get_openai_client(api_key="KEY_HERE"):
+    """
+    Returns the OpenAI client (takes as input the api key).
+    """
+    return OpenAI(api_key=api_key)
+
+
+def interrogate_4o(client, model, conversation, response_format):
+    """
+    Interrogates the 4o LLM with the given prompt.
+
+    Args:
+        client (OpenAI): The OpenAI client.
+        model (str): if "mini" then gpt-4o-mini is used, otherwise gpt-4o.
+        conversation (list): The conversation history.
+        response_format (BaseModel): The response format (schema for structured output).
+    """
+    completion = client.beta.chat.completions.parse(
+        model="gpt-4o-mini" if model == "mini" else "gpt-4o",
+        messages=conversation,
+        response_format=response_format,
+    )
+    return completion.choices[0].message.parsed
+
+
+def interrogate_o1(client, model, conversation):
+    """
+    Interrogates the o1 LLM with the given prompt.
+
+    Args:
+        client (OpenAI): The OpenAI client.
+        model (str): if "mini" then o1-mini is used, otherwise o1.
+        conversation (list): The conversation history (includes only user and assistant messages).
+        response_format (BaseModel): The response format (schema for structured output).
+    """
+    completion = client.chat.completions.create(
+        model="o1-mini" if model == "mini" else "o1",
+        messages=conversation,
+    )
+    return completion.choices[0].message.content
+
+
