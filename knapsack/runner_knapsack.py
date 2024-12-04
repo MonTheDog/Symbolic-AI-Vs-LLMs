@@ -2,6 +2,7 @@
 import utils
 import algorithm_knapsack as ak
 import symbolic_knapsack as sk
+import llm_knapsack as llm
 
 print("=================================================")
 print("LLMs vs Symbolic AI - Knapsack Problem")
@@ -30,9 +31,13 @@ for i in range(0, 100):
     sk_elapsed_times.append(elapsed_time)
     sk_opt_distances.append(solution - sk_value)
     print()
-
     # LLM
-    # ...
+    llm_knapsack_agent = llm.KnapsackLLMAgent("4o")
+    _, solution, reasoning, total_weight = llm_knapsack_agent.action_loop(knapsack_instance)
+    print("Items taken: " + solution)
+    print("Reasoning: " + reasoning)
+    print("Total value: " + str(total_weight))
+    print()
 
 sk_average_value = sum(sk_values) / len(sk_values)
 sk_average_elapsed_time = sum(sk_elapsed_times) / len(sk_elapsed_times)
