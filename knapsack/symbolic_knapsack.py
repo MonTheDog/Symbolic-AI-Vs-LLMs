@@ -175,5 +175,4 @@ def run_ga(knapsack_instance):
         if best_individual[i] == 1:
             best_items.append(items[i])
 
-    print("Items taken: " + str(best_items))
-    print("Total value: " + str(calculate_fitness(best_individual, weights, values, capacity)))
+    return calculate_fitness(best_individual, weights, values, capacity), best_items

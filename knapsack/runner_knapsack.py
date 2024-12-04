@@ -15,8 +15,10 @@ print("Optimal Subset: ", best_items)
 print("Optimal Value: ", solution)
 print()
 
-print("================ Genetic Algorithm ================")
-sk.run_ga(knapsack_instance)
+print("================== Symbolic AI ==================")
+sk_value, sk_items = sk.run_ga(knapsack_instance)
+print("Items taken: " + str(sk_items))
+print("Total value: " + str(sk_value))
 print()
 
 # ...
