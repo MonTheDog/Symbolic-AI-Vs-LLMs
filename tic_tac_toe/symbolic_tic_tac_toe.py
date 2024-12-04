@@ -1,5 +1,6 @@
 from random import choice
 from math import inf
+import statistics
 from timeit import default_timer as timer
 from tic_tac_toe.llm_tic_tac_toe import TicTacToeLLMAgent
 from utils import print_elapsed_time
@@ -321,6 +322,8 @@ def run_games(games, llm_model):
     symbolic_wins = 0
     draws = 0
     current_turn = 1
+    llm_agent_times = []
+    symbolic_agent_times = []
 
     # The first turn of the first game is always for the LLM Agent
     starting_agent = 1
@@ -333,7 +336,11 @@ def run_games(games, llm_model):
 
         # Execute the game
         while not (is_board_full(gameboard) or is_game_won(gameboard)):
-            make_move(gameboard, current_agent, current_turn, llm_agent)
+            elapsed_time = make_move(gameboard, current_agent, current_turn, llm_agent)
+            if current_agent == 1:
+                llm_agent_times.append(elapsed_time)
+            elif current_agent == -1:
+                symbolic_agent_times.append(elapsed_time)
             current_agent *= -1
             current_turn = current_turn + 1
 
@@ -347,7 +354,7 @@ def run_games(games, llm_model):
             draws += 1
 
         # Resets the turn count
-        current_turn = 0
+        current_turn = 1
 
         # Resets the conversation
         llm_agent.reset_conversation()
@@ -359,7 +366,9 @@ def run_games(games, llm_model):
     print("===== Final Result =====")
     print("LLM Agent " + str(llm_wins) + " - " + str(symbolic_wins) + " Symbolic Agent")
     print("Number of draws: " + str(draws))
-    print("Number of invalid moves for the LLM Agent: " + str(llm_invalid_moves) + "\n")
+    print("Number of invalid moves for the LLM Agent: " + str(llm_invalid_moves))
+    print("Average response time for LLM Agent: " + format(statistics.mean(llm_agent_times),".4f") + "ms")
+    print("Average response time for Symbolic Agent: " + format(statistics.mean(symbolic_agent_times),".4f") + "ms" + "\n")
     if llm_wins > symbolic_wins:
         print("The winner is... the LLM Agent!")
     elif symbolic_wins > llm_wins:
