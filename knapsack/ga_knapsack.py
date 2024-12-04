@@ -159,10 +159,15 @@ def run_ga(weights, values, capacity, population_size):
     best_individual = max(best_individuals, key=lambda x: calculate_fitness(x, weights, values, capacity))
 
     end = timer()
-
-    print("Best individual:\n" + str(best_individual))
-    print("Total value: " + str(calculate_fitness(best_individual, weights, values, capacity)))
     utils.print_elapsed_time(start, end)
+
+    best_items = []
+    for i in range(0, len(best_individual)):
+        if best_individual[i] == 1:
+            best_items.append(items[i])
+
+    print("Items taken: " + str(best_items))
+    print("Total value: " + str(calculate_fitness(best_individual, weights, values, capacity)))
 
 
 # Obtaining the knapsack instance
