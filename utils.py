@@ -62,7 +62,7 @@ def print_elapsed_time(start, end):
     print("Elapsed Time: " + format(truncate_float((end - start) * 1000, 4), ".4f") + "ms")
 
 
-def get_openai_client(api_key="KEY_HERE"):
+def get_openai_client(api_key="API_KEY"):
     """
     Returns the OpenAI client (takes as input the api key).
     """

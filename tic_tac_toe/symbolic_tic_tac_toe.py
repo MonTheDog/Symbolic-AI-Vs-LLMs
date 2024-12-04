@@ -1,12 +1,33 @@
 from random import choice
 from math import inf
 from timeit import default_timer as timer
-
+from tic_tac_toe.llm_tic_tac_toe import TicTacToeLLMAgent
 from utils import print_elapsed_time
+
+moves = {1: [0, 0], 2: [0, 1], 3: [0, 2],
+         4: [1, 0], 5: [1, 1], 6: [1, 2],
+         7: [2, 0], 8: [2, 1], 9: [2, 2]}
 
 gameboard = [[0, 0, 0],
              [0, 0, 0],
              [0, 0, 0]]
+
+llm_invalid_moves = 0
+
+def get_string_gameboard(board):
+    """
+    Gets the gameboard in string format
+    :param board: The current gameboard
+    :return: The gameboard in string format
+    """
+    chars = {1: 'X', -1: 'O', 0: ' '}
+    result = '---------------\n'
+    for x in board:
+        for y in x:
+            ch = chars[y]
+            result += f'| {ch} |'
+        result += '\n---------------\n'
+    return result
 
 
 def print_gameboard(board, agent):
@@ -15,23 +36,17 @@ def print_gameboard(board, agent):
     :param board: The gameboard
     :param agent: The agent which has to make a move
     """
-    chars = {1: 'X', -1: 'O', 0: ' '}
     if agent == 1:
         print("=*= LLM Agent Turn (X) =*=")
     else:
         print("=*= Symbolic Agent Turn (O) =*=")
-    print('---------------')
-    for x in board:
-        for y in x:
-            ch = chars[y]
-            print(f'| {ch} |', end='')
-        print('\n' + '---------------')
+    print(get_string_gameboard(board))
 
 
 def clear_gameboard(board):
     """
-    Resets the gameboard
-    :param board: The gameboard to be rest
+    Resets the current gameboard
+    :param board: the gameboard to be reset
     """
     for x, row in enumerate(board):
         for y, col in enumerate(row):
@@ -123,27 +138,30 @@ def set_move(board, x, y, agent):
     board[x][y] = agent
 
 
-def llm_move(board, move):
+def llm_move(board, move, agent, reasoning):
     """
     Executes the LLM agent move
     :param board: The gameboard
     :param move: The move to execute (an integer between 1 and 9)
-    :return: True if the move is not valid, False otherwise (TODO: Change this)
+    :param agent: The llm agent in use
+    :param reasoning: The reasoning behind the move
+    :return: True if the move is not valid, False otherwise
     """
-    moves = {1: [0, 0], 2: [0, 1], 3: [0, 2],
-             4: [1, 0], 5: [1, 1], 6: [1, 2],
-             7: [2, 0], 8: [2, 1], 9: [2, 2]}
+    global llm_invalid_moves
 
     # Check if the move is valid
     if move < 1 or move > 9:
-        # TODO: Tell the LLM to retry
+        agent.update_conversation("user","Cell is out of range, please try again")
+        llm_invalid_moves = llm_invalid_moves + 1
         return True
     elif not (moves[move] in blanks(board)):
-        # TODO: Tell the LLM to retry
+        llm_invalid_moves = llm_invalid_moves + 1
+        agent.update_conversation("user","Cell is already occupied, please try again")
         return True
     else:
         set_move(board, moves[move][0], moves[move][1], 1)
         print_gameboard(board, 1)
+        print("Reasoning: " + reasoning)
         return False
 
 
@@ -238,41 +256,72 @@ def symbolic_move(board):
         print_gameboard(board, -1)
 
 
-# TODO: Mock method, to be changed to the LLM logic (right now it's a random move)
-def get_llm_move():
-    return choice([1, 2, 3, 4, 5, 6, 7, 8, 9])
+def get_llm_move(llm_agent, current_turn, string_gameboard):
+    """
+    Returns the selected move for the llm agent
+    :param llm_agent: the agent to be used
+    :param current_turn: the current turn
+    :param string_gameboard: the gameboard in string form
+    :return: The chosen move and the reasoning for that
+    """
+    return llm_agent.action_loop(current_turn, string_gameboard)
 
 
-# TODO: Adapt to LLM when the Mock is removed
-def make_move(board, agent):
+def get_random_move(board):
+    """
+    Executes a random move
+    :param board: the gameboard
+    :return: the random move
+    """
+    chosen_move = 0
+    e = True
+    while e:
+        chosen_move = choice([0,1,2,3,4,5,6,7,8,9])
+        if moves[chosen_move] not in blanks(board):
+            e = True
+        else:
+            e = False
+    return chosen_move
+
+
+def make_move(board, current_agent, current_turn, llm_agent):
     """
     Makes the next move and shows the time elapsed
     :param board: The gameboard
-    :param agent: The current agent
+    :param current_agent: The current agent
+    :param current_turn: the current turn of the game
+    :param llm_agent: the llm agent in use
     """
     start = timer()
-    if agent == 1:
+    if current_agent == 1:
         e = True
         while e:
-            move = get_llm_move()
-            e = llm_move(board, move)
+            move, reasoning = get_llm_move(llm_agent, current_turn, get_string_gameboard(board))
+            # If the model couldn't answer we execute a random move
+            if move == 0:
+                move = get_random_move(board)
+                reasoning = "Random Move, model couldn't answer"
+            e = llm_move(board, move, llm_agent, reasoning)
     else:
         symbolic_move(board)
     end = timer()
     print_elapsed_time(start, end)
 
 
-def run_games(games):
+def run_games(games, llm_model):
     """
     Runner function. LLM agent is 1 (X), Symbolic agent is -1 (O)
     :param games: The number of games to play
+    :param llm_model: the llm model to use, either "4o" or "o1"
     """
     llm_wins = 0
     symbolic_wins = 0
     draws = 0
+    current_turn = 1
 
     # The first turn of the first game is always for the LLM Agent
     starting_agent = 1
+    llm_agent = TicTacToeLLMAgent(llm_model)
 
     for i in range(games):
         # Reset the board
@@ -281,8 +330,9 @@ def run_games(games):
 
         # Execute the game
         while not (is_board_full(gameboard) or is_game_won(gameboard)):
-            make_move(gameboard, current_agent)
+            make_move(gameboard, current_agent, current_turn, llm_agent)
             current_agent *= -1
+            current_turn = current_turn + 1
 
         # Print the result for this game
         result = print_result(gameboard)
@@ -293,6 +343,11 @@ def run_games(games):
         elif result == 0:
             draws += 1
 
+        # Resets the turn count
+        current_turn = 0
+
+        # Resets the conversation
+        llm_agent.reset_conversation()
 
         # Change the starting agent in the next game
         starting_agent *= -1
@@ -300,7 +355,8 @@ def run_games(games):
     # Print the result for the test
     print("===== Final Result =====")
     print("LLM Agent " + str(llm_wins) + " - " + str(symbolic_wins) + " Symbolic Agent")
-    print("Number of draws: " + str(draws) + "\n")
+    print("Number of draws: " + str(draws))
+    print("Number of invalid moves for the LLM Agent: " + str(llm_invalid_moves) + "\n")
     if llm_wins > symbolic_wins:
         print("The winner is... the LLM Agent!")
     elif symbolic_wins > llm_wins:

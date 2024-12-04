@@ -9,6 +9,7 @@ import os
 import importlib
 import re
 from pydantic import BaseModel
+import utils
 
 
 """
@@ -140,10 +141,25 @@ class TicTacToeLLMAgent:
         self.conversation = MAPPING_MODEL_NAME_TO_CONVERSATION[model_name]
         self.output_schema = TicTacToeOutputSchema if model_name == "4o" else None
         self.internal_checking_schema = MAPPING_MODEL_NAME_TO_INTERNAL_CHECKING_SCHEMA[model_name]
-    
+
+    def reset_conversation(self):
+        """
+        Resets the conversation state for a model.
+        :param model: The model in use
+        """
+        global TICTACTOE_4O_CONVERSATION
+        global TICTACTOE_O1_CONVERSATION
+
+        if self.model_name == "4o":
+            TICTACTOE_4O_CONVERSATION = [{"role": "system",
+                 "content": "You are playing tic-tac-toe. Your goal is to win the game. Your symbol is X. Below, you’ll see the current move number and a representation of the current board. You need to specify the number of the cell where you want to place your symbol. The cells are numbered from top to bottom, left to right: the first row has 1, 2, 3; the second row has 4, 5, 6; and the third row has 7, 8, 9. In your response, include a string with the reasoning you used to find the solution and the number corresponding to the cell where you want to place your symbol, like in the format below."},]
+            self.conversation = TICTACTOE_4O_CONVERSATION
+        elif self.model_name == "o1":
+            TICTACTOE_O1_CONVERSATION = [ ]
+            self.conversation = TICTACTOE_O1_CONVERSATION
 
     def update_conversation(self, role, content):
-        self.conversation.append({"role": role, "content": content})
+        self.conversation.append({"role": role, "content": str(content)})
 
 
     def action(self):
@@ -157,26 +173,26 @@ class TicTacToeLLMAgent:
             response = utils.interrogate_o1(self.client, "mini", self.conversation)
         self.update_conversation("assistant", response)
         is_valid, feedback_message = self.internal_checking_schema(response)
-        return is_valid, feedback_message
+        return is_valid, feedback_message, response
 
 
     def action_loop(self, move_number, current_board, max_moves=3):
         """
         Repeats until the response adheres to the internal schema or the maximum number of moves is reached
         Input: move_number, current_board
-        Output: response from the LLM (integer, False if the response is not valid)
+        Output: selected cell number and reasoning. If the model failed move number will be 0
         """
         prompt = tictactoe_to_llm_adapter(self.base_prompt, move_number, current_board)
         self.update_conversation("user", prompt)
         i = 0
         while i < max_moves:
-            is_valid, feedback_message = self.action(move_number, current_board)
+            is_valid, feedback_message, response = self.action()
             if is_valid:
-                return is_valid
+                return response.cell_number, response.reasoning
             else:
                 i+=1
                 self.update_conversation("user", feedback_message)
-        return False
+        return 0, ""
         
 
 
