@@ -101,11 +101,3 @@ def get_knapsack_optimal_solution(instance):
         best_subset.append(items[i-1])
 
     return optimal_solution, best_subset
-
-# TODO: Remove and paste in runner_knapsack
-if __name__ == "__main__":
-
-    solution, best_items = get_knapsack_optimal_solution(utils.get_knapsack_instance())
-
-    print("Optimal Value: ", solution)
-    print("Optimal Subset: ", best_items)

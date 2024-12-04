@@ -4,7 +4,7 @@ import operator
 from timeit import default_timer as timer
 
 
-def inizialize_population(population_size, number_of_items):
+def inizialize_population(population_size, number_of_items, weights, values, capacity):
     """
         Initializes the population of the genetic algorithm.
         :param population_size: The size of the population
@@ -75,7 +75,7 @@ def selection(population, weights, values, capacity):
     return best_individuals
 
 
-def crossover(parent1, parent2):
+def crossover(parent1, parent2, weights, values, capacity):
     """
         Performs the crossover operation between two parents.
         :param parent1: The first parent
@@ -127,7 +127,7 @@ def generate_valid_individual(number_of_items, weights, values, capacity):
             return individual
 
 
-def run_ga(weights, values, capacity, population_size):
+def run_ga(knapsack_instance):
     """
         Runs the genetic algorithm to solve the knapsack problem.
         :param weights: The weights of the items
@@ -135,10 +135,19 @@ def run_ga(weights, values, capacity, population_size):
         :param capacity: The capacity of the knapsack
     """
 
+    items = knapsack_instance["items"]
+    weights = []
+    values = []
+    for item in items:
+        weights.append(item["Weight"])
+        values.append(item["Value"])
+    capacity = knapsack_instance["capacity"]
+    population_size = 50  # Number of individuals in the population
+
     start = timer()
 
     number_of_items = len(weights)
-    population = inizialize_population(population_size, number_of_items)
+    population = inizialize_population(population_size, number_of_items, weights, values, capacity)
 
     for generation in range(50): # Run the genetic algorithm for 50 generations
         best_individuals = selection(population, weights, values, capacity)
@@ -149,7 +158,7 @@ def run_ga(weights, values, capacity, population_size):
             parent1 = random.choice(best_individuals)
             parent2 = random.choice(best_individuals)
             # Perform crossover and mutation to create the offspring
-            offspring = crossover(parent1, parent2)
+            offspring = crossover(parent1, parent2, weights, values, capacity)
             offspring = mutation(offspring)
             new_population.append(offspring)
 
@@ -168,16 +177,3 @@ def run_ga(weights, values, capacity, population_size):
 
     print("Items taken: " + str(best_items))
     print("Total value: " + str(calculate_fitness(best_individual, weights, values, capacity)))
-
-
-# Obtaining the knapsack instance
-knapsack_instance = utils.get_knapsack_instance()
-items = knapsack_instance["items"]
-weights = []
-values = []
-for item in items:
-    weights.append(item["Weight"])
-    values.append(item["Value"])
-capacity = knapsack_instance["capacity"]
-population_size = 50 # Number of individuals in the population
-run_ga(weights, values, capacity, population_size)
