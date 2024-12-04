@@ -55,11 +55,16 @@ def print_elapsed_time(start, end):
     and call start = timer() at the start and end = timer() at the end
     :param start: The starting time
     :param end: The end time
+    :return: The elapsed time in milliseconds
     """
     def truncate_float(float_number, decimal_places):
         multiplier = 10 ** decimal_places
         return int(float_number * multiplier) / multiplier
-    print("Elapsed Time: " + format(truncate_float((end - start) * 1000, 4), ".4f") + "ms")
+
+    elapsed_time = format(truncate_float((end - start) * 1000, 4), ".4f")
+    print("Elapsed Time: " + elapsed_time + "ms")
+
+    return float(elapsed_time)
 
 
 def get_openai_client(api_key="API_KEY"):

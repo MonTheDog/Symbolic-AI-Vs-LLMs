@@ -291,6 +291,7 @@ def make_move(board, current_agent, current_turn, llm_agent):
     :param current_agent: The current agent
     :param current_turn: the current turn of the game
     :param llm_agent: the llm agent in use
+    :return: the elapsed time in milliseconds
     """
     start = timer()
     if current_agent == 1:
@@ -305,7 +306,9 @@ def make_move(board, current_agent, current_turn, llm_agent):
     else:
         symbolic_move(board)
     end = timer()
-    print_elapsed_time(start, end)
+    elapsed_time = print_elapsed_time(start, end)
+
+    return elapsed_time
 
 
 def run_games(games, llm_model):

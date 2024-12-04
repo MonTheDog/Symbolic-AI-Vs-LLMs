@@ -168,11 +168,11 @@ def run_ga(knapsack_instance):
     best_individual = max(best_individuals, key=lambda x: calculate_fitness(x, weights, values, capacity))
 
     end = timer()
-    utils.print_elapsed_time(start, end)
+    elapsed_time = utils.print_elapsed_time(start, end)
 
     best_items = []
     for i in range(0, len(best_individual)):
         if best_individual[i] == 1:
             best_items.append(items[i])
 
-    return calculate_fitness(best_individual, weights, values, capacity), best_items
+    return calculate_fitness(best_individual, weights, values, capacity), best_items, elapsed_time
