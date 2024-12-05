@@ -239,6 +239,7 @@ class KnapsackLLMAgent:
         start = timer()
         prompt = knapsack_to_llm_adapter(self.base_prompt, knapsack_instance)
         self.update_conversation("user", prompt)
+        invalid_solutions = 0
         i = 0
         while i < max_moves:
             is_valid, feedback_message, reasoning = self.action(knapsack_instance["capacity"])
@@ -250,10 +251,11 @@ class KnapsackLLMAgent:
                     is_valid = json.dumps(is_valid)
                 end = timer()
                 elapsed_time = utils.print_elapsed_time(start, end)
-                return True, is_valid, reasoning, total_value, elapsed_time
+                return True, is_valid, reasoning, total_value, invalid_solutions, elapsed_time
             else:
                 i+=1
+                invalid_solutions += 1
                 self.update_conversation("user", feedback_message)
         end = timer()
         elapsed_time = utils.print_elapsed_time(start, end)
-        return False, "No solution found", "No reasoning available", 0, elapsed_time
+        return False, "No solution found", "No reasoning available", 0, invalid_solutions, elapsed_time
