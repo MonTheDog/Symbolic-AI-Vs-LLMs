@@ -111,7 +111,7 @@ def interrogate_o1(client, model, conversation):
     return completion.choices[0].message.content
 
 
-def plot_values(sk_values, llm_values):
+def plot_values(sk_values, llm_values, model_name):
     """
     Plots the values obtained by the Symbolic AI and the LLM.
     :param sk_values: The values obtained by the Symbolic AI.
@@ -128,10 +128,10 @@ def plot_values(sk_values, llm_values):
     axes[0].grid(axis='y', linestyle='--', alpha=0.7)
 
     axes[1].hist(llm_values, bins=bins, edgecolor='black', alpha=0.7, color='blue')
-    axes[1].set_title("LLM")
+    axes[1].set_title(model_name)
     axes[1].set_xlabel("Valori")
     axes[1].grid(axis='y', linestyle='--', alpha=0.7)
 
     plt.tight_layout()
-    plt.savefig(os.path.join("..", "plots", "values_plot.png"))
+    plt.savefig(os.path.join("..", "plots", "values-plot-SAI-vs-" + model_name + ".png"))
     plt.show()
