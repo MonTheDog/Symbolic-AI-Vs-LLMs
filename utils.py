@@ -1,8 +1,7 @@
-# File per le funzioni utilizzate in tutto il progetto (inizializzazione delle istanze dei problemi come il knapsack
-# o funzioni di valutazione sul tempo o sulla qualità delle soluzioni)
-
 import json
 from openai import OpenAI
+from problog.logic import Term
+
 
 def get_knapsack_instance():
     """
@@ -109,3 +108,16 @@ def interrogate_o1(client, model, conversation):
     return completion.choices[0].message.content
 
 
+def print_probability_dict(result):
+    """
+    Prints the probability dict for the given result.
+    :param result: the dict for the probabilistic reasoning computation.
+    """
+    result_string = ""
+
+    for key in result.keys():
+        result_string += str(key) + ": " + str(format(round(result[key], 6), ".6f")) + "\n"
+
+    result_string = result_string[:-1]
+
+    print(result_string)
