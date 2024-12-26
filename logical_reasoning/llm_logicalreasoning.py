@@ -1,15 +1,5 @@
 #  File per implementare l'agente llm per ragionamento logico stile Prolog
 
-"""
-Temporaneo per importazione moduli
-"""
-import sys
-import os
-
-# Ottieni il percorso della directory principale
-main_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-# Aggiungi la directory principale a sys.path
-sys.path.insert(0, main_dir)
 
 """
 External Dependencies:
