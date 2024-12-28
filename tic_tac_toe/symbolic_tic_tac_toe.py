@@ -3,7 +3,7 @@ from math import inf
 import statistics
 from timeit import default_timer as timer
 from tic_tac_toe.llm_tic_tac_toe import TicTacToeLLMAgent
-from utils import print_elapsed_time
+from utils import get_elapsed_time
 
 moves = {1: [0, 0], 2: [0, 1], 3: [0, 2],
          4: [1, 0], 5: [1, 1], 6: [1, 2],
@@ -92,13 +92,13 @@ def print_result(board):
     :return: 1 if the LLM agent has won the game, -1 if the Symbolic agent has won the game, 0 if the game is a draw
     """
     if has_agent_won(board, 1):
-        print('LLM Agent has won this game! ' + '\n')
+        #print('LLM Agent has won this game! ' + '\n')
         return 1
     elif has_agent_won(board, -1):
-        print('Symbolic Agent has won this game! ' + '\n')
+        #print('Symbolic Agent has won this game! ' + '\n')
         return -1
     else:
-        print('Draw!' + '\n')
+        #print('Draw!' + '\n')
         return 0
 
 
@@ -161,8 +161,8 @@ def llm_move(board, move, agent, reasoning):
         return True
     else:
         set_move(board, moves[move][0], moves[move][1], 1)
-        print_gameboard(board, 1)
-        print("Reasoning: " + reasoning)
+        #print_gameboard(board, 1)
+        #print("Reasoning: " + reasoning)
         return False
 
 
@@ -248,13 +248,13 @@ def symbolic_move(board):
         # If it is the first move, we place the O in a corner as it is the proven best move.
         # Reference to: https://www.youtube.com/watch?v=QNFQvX-MQgI (06:05 mark)
         set_move(board, 0, 0, -1)
-        print_gameboard(board, -1)
+        #print_gameboard(board, -1)
 
     else:
         # Get the best move and execute it
         result = alphabeta_minimax(board, len(blanks(board)), -inf, inf, -1)
         set_move(board, result[0], result[1], -1)
-        print_gameboard(board, -1)
+        #print_gameboard(board, -1)
 
 
 def get_llm_move(llm_agent, current_turn, string_gameboard):
@@ -307,16 +307,16 @@ def make_move(board, current_agent, current_turn, llm_agent):
     else:
         symbolic_move(board)
     end = timer()
-    elapsed_time = print_elapsed_time(start, end)
+    elapsed_time = get_elapsed_time(start, end)
 
     return elapsed_time
 
 
-def run_games(games, llm_model):
+def run_games(games, model_name):
     """
     Runner function. LLM agent is 1 (X), Symbolic agent is -1 (O)
     :param games: The number of games to play
-    :param llm_model: the llm model to use, either "4o" or "o1"
+    :param model_name: the llm model to use, either "4o" or "o1"
     """
     llm_wins = 0
     symbolic_wins = 0
@@ -327,7 +327,7 @@ def run_games(games, llm_model):
 
     # The first turn of the first game is always for the LLM Agent
     starting_agent = 1
-    llm_agent = TicTacToeLLMAgent(llm_model)
+    llm_agent = TicTacToeLLMAgent(model_name)
 
     for i in range(games):
         # Reset the board
@@ -363,15 +363,15 @@ def run_games(games, llm_model):
         starting_agent *= -1
 
     # Print the result for the test
-    print("===== Final Result =====")
-    print("LLM Agent " + str(llm_wins) + " - " + str(symbolic_wins) + " Symbolic Agent")
+    print("==================== " + model_name +" vs Symbolic AI ====================")
+    print(model_name +" " + str(llm_wins) + " - " + str(symbolic_wins) + " Symbolic AI")
     print("Number of draws: " + str(draws))
-    print("Number of invalid moves for the LLM Agent: " + str(llm_invalid_moves))
-    print("Average response time for LLM Agent: " + format(statistics.mean(llm_agent_times),".4f") + "ms")
-    print("Average response time for Symbolic Agent: " + format(statistics.mean(symbolic_agent_times),".4f") + "ms" + "\n")
-    if llm_wins > symbolic_wins:
-        print("The winner is... the LLM Agent!")
-    elif symbolic_wins > llm_wins:
-        print("The winner is... the Symbolic Agent!")
-    else:
-        print("The winner is... oh... it's a Draw!")
+    print("Number of invalid moves for " + model_name + ": " + str(llm_invalid_moves))
+    print("Average response time for " + model_name + ": " + format(statistics.mean(llm_agent_times),".4f") + "ms")
+    print("Average response time for Symbolic AI: " + format(statistics.mean(symbolic_agent_times),".4f") + "ms")
+    #if llm_wins > symbolic_wins:
+     #   print("The winner is... the LLM Agent!")
+    #elif symbolic_wins > llm_wins:
+    #    print("The winner is... the Symbolic Agent!")
+    #else:
+     #   print("The winner is... oh... it's a Draw!")

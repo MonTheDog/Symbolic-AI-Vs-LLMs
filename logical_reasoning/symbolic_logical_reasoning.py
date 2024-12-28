@@ -3,9 +3,15 @@ from pyswip import Prolog
 import utils
 from utils import print_elapsed_time
 
+singleton_check = False
 
 def get_knowledge_base(prolog_script):
-    knoweldge_base = Prolog()
+    global singleton_check
+    if singleton_check:
+        return Prolog()
+    else:
+        singleton_check = True
+    knowledge_base = Prolog()
 
     # Split the script by '.' (Prolog facts and rules are terminated with '.')
     rules = prolog_script.strip().split('.')
@@ -14,9 +20,9 @@ def get_knowledge_base(prolog_script):
     for rule in rules:
         rule = rule.strip()
         if rule:
-            knoweldge_base.assertz(rule)
+            knowledge_base.assertz(rule)
 
-    return knoweldge_base
+    return knowledge_base
 
 
 def solve_logic_problem(kb):
@@ -50,3 +56,18 @@ def solve_logic_problem(kb):
     print_elapsed_time(start, end)
 
 
+# Prendere i risultati della symbolic AI e renderli una lista di frasi, ogni frase è composta da token (relazione, x, y ad es)
+# Fare lo stesso procedimento con output di 4o e o1
+
+# Per ogni frase, controllare se vi è un corrispondente in 4o e o1 (corrispondente varia da caso a caso, ci sono volte in cui
+# relazioni come "cugino" hanno un termine extra ma sono giuste, oppure casi in cui non è importante l'ordine dei token, ecc)
+
+# Se vi è corrispondenza, si conta come giusta e si elimina dalla lista di 4o e o1
+
+# Se vi è la relazione ma i termini sono sbagliati (anche qui va capito cosa significa "sbagliato", perché varia da caso a caso,
+# a volte sbagliato è se anche un solo termine non corrisponde, altre volte potrebbe essere solo se sono entrambi sbagliati, ecc)
+# si conta come errata e si elimina dalla lista di 4o e o1
+
+# Se non vi è la corrispondenza si conta come mancante e si passa alla prossima
+
+# Alla fine si conta il numero di frasi rimanenti nella lista di 4o e o1 e sono contante come aggiunte

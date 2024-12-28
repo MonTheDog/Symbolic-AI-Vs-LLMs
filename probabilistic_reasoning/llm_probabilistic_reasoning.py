@@ -42,12 +42,12 @@ Desired format: ###
     {{
         "variable": "Var",
         "value": "Value1",
-        "probability": "Probability1"
+        "probability": "Probability1" (The probability percentage, such as 0.10, 0.27, ecc)
     }},
     {{
         "variable": "Var",
         "value": "Value2",
-        "probability": "Probability2"
+        "probability": "Probability2" (The probability percentage, such as 0.10, 0.27, ecc)
     }},
     ....
 ]
@@ -76,12 +76,12 @@ Desired format: ###
     {{
         "variable": "Var",
         "value": "Value1",
-        "probability": "Probability1"
+        "probability": "Probability1" (The probability percentage, such as 0.10, 0.27, ecc)
     }},
     {{
         "variable": "Var",
         "value": "Value2",
-        "probability": "Probability2"
+        "probability": "Probability2" (The probability percentage, such as 0.10, 0.27, ecc)
     }},
     ....
 ]
@@ -178,6 +178,23 @@ class ProbabilisticReasoningProblogStyleLLMAgent:
         self.output_schema = ProbabilisticReasoningProblogStyleResponse if model_name == "4o" else None
         self.internal_checking_schema = probabilistic_reasoning_problog_style_4o_internal_checking_schema if model_name == "4o" else probabilistic_reasoning_problog_style_o1_internal_checking_schema
 
+    def reset_conversation(self):
+        """
+        Resets the conversation state for a model.
+        """
+        global PROBABILISTIC_REASONING_PROBLOG_STYLE_4O_CONVERSATION
+        global PROBABILISTIC_REASONING_PROBLOG_STYLE_O1_CONVERSATION
+
+        if self.model_name == "4o":
+            PROBABILISTIC_REASONING_PROBLOG_STYLE_4O_CONVERSATION = [
+                {"role": "system",
+                 "content": INSTRUCTION_PROMPT}
+            ]
+            self.conversation = PROBABILISTIC_REASONING_PROBLOG_STYLE_4O_CONVERSATION
+        elif self.model_name == "o1":
+            PROBABILISTIC_REASONING_PROBLOG_STYLE_O1_CONVERSATION = [ ]
+            self.conversation = PROBABILISTIC_REASONING_PROBLOG_STYLE_O1_CONVERSATION
+
     def update_conversation(self, role, content):
         self.conversation.append({"role": role, "content": content})
 
@@ -209,14 +226,16 @@ class ProbabilisticReasoningProblogStyleLLMAgent:
 
     def calculate_probability(self, bn, evidence, query):
         start = timer()
+        result = dict()
         response = self.action_loop(bn, evidence, query)
         if self.model_name == "4o":
             for item in response.result:
-                print(str(item.variable) + "(" + str(item.value) + ")" + ": " + str(item.probability))
+                result[str(item.variable) + "(" + str(item.value) + ")"] = float(item.probability)
         elif self.model_name == "o1":
             # Convert from json format the response
             response = json.loads(response)
             for item in response:
-                print(str(item["variable"]) + "(" + str(item["value"]) + ")" + ": " + str(item["probability"]))
+                result[str(item["variable"]) + "(" + str(item["value"]) + ")"]  = float(item["probability"])
         end = timer()
-        utils.print_elapsed_time(start, end)
+        time = utils.get_elapsed_time(start, end)
+        return result, time

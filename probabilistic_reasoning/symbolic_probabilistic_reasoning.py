@@ -7,10 +7,12 @@ import utils
 
 
 def get_true_probability(prolog_string):
-    start = timer()
-    utils.print_probability_dict(get_evaluatable().create_from(prolog_string).evaluate())
-    end = timer()
-    utils.print_elapsed_time(start, end)
+    result = get_evaluatable().create_from(prolog_string).evaluate()
+    utils.print_probability_dict(result)
+    result_dict = dict()
+    for key in result.keys():
+        result_dict[str(key)] = result[key]
+    return result_dict
 
 
 def get_probability_from_samples(prolog_string, num_samples):
@@ -27,24 +29,15 @@ def get_probability_from_samples(prolog_string, num_samples):
     result_dict = dict()
 
     for key in count_dict.keys():
-        result_dict[key] = count_dict[key]/num_samples
+        result_dict[str(key)] = count_dict[key]/num_samples
 
-    utils.print_probability_dict(result_dict)
+    #utils.print_probability_dict(result_dict)
     end = timer()
-    utils.print_elapsed_time(start, end)
+    time = utils.get_elapsed_time(start, end)
+    return result_dict["age(young)"], result_dict["education(uni)"], result_dict["sex(male)"], time
 
 
 def convert_string_to_problog(network, evidence, queries):
     problog_string = network + evidence + queries
     return PrologString(problog_string)
-
-if __name__ == '__main__':
-
-    survey_network, survey_evidence, survey_queries = utils.get_probabilistic_instance()
-
-    p_survey = convert_string_to_problog(survey_network, survey_evidence, survey_queries)
-
-    get_true_probability(p_survey)
-
-    get_probability_from_samples(p_survey,1000)
 

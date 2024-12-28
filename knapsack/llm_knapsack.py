@@ -1,8 +1,3 @@
-# File per implementare l'agente llm per risolvere il problema dello zaino
-
-#  Possible TODOS:
-#  - Introduce few-shot (fine-tuning?)
-
 """
 External Dependencies
 """
@@ -148,7 +143,7 @@ def knapsack_o1_internal_checking_schema(response, capacity):
 
     Input: string response provided by the LLM
     """
-    match = re.search(r'(\[.*\])', response, re.DOTALL)  #  pre-processing step
+    match = re.search(r'(\[.*])', response, re.DOTALL)  #  pre-processing step
     if not match:
         return False
     response = match.group(1)
@@ -198,7 +193,6 @@ class KnapsackLLMAgent:
     def reset_conversation(self):
         """
         Resets the conversation state for a model.
-        :param model: The model in use
         """
         global KNAPSACK_4O_CONVERSATION
         global KNAPSACK_O1_CONVERSATION
@@ -224,6 +218,8 @@ class KnapsackLLMAgent:
             response = utils.interrogate_4o(self.client, "mini", self.conversation, self.output_schema)
         elif self.model_name == "o1":
             response = utils.interrogate_o1(self.client, "mini", self.conversation)
+        else:
+            return
         self.update_conversation("assistant", response)
         is_valid, feedback_message = self.internal_checking_schema(response, capacity)
         if self.model_name == "4o":
@@ -249,8 +245,10 @@ class KnapsackLLMAgent:
                 elif self.model_name == "o1":
                     total_value = sum(item["Value"] for item in is_valid)
                     is_valid = json.dumps(is_valid)
+                else:
+                    return
                 end = timer()
-                elapsed_time = utils.print_elapsed_time(start, end)
+                elapsed_time = utils.get_elapsed_time(start, end)
                 return True, is_valid, reasoning, total_value, invalid_solutions, elapsed_time
             else:
                 i+=1

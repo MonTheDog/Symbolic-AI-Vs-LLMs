@@ -57,7 +57,6 @@ def knapsack_with_best_subset(knapsack_weight, items_weights, items_value):
     :param items_value: The values of the items
     :return: The optimal value of the knapsack and the subset of items of the optimal solution
     """
-    start = timer()
     num_items = len(items_weights)
 
     # Solve the knapsack problem
@@ -66,10 +65,6 @@ def knapsack_with_best_subset(knapsack_weight, items_weights, items_value):
     # Get the optimal set
     optimal_items = set()
     construct_optimal_set(dp_table, items_weights, num_items, knapsack_weight, optimal_items)
-    end = timer()
-
-    # Prints the time elapsed to run the algorithm
-    utils.print_elapsed_time(start, end)
 
     return optimal_val, optimal_items
 

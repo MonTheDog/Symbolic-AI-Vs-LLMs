@@ -1,10 +1,8 @@
-import json
-import os
 import matplotlib.pyplot as plt
+import openai
 from openai import OpenAI
-from problog.logic import Term
-from problog.program import PrologString
 
+openai_key = ""
 
 def get_knapsack_instance():
     """
@@ -99,9 +97,9 @@ def get_probabilistic_instance(instance = 0):
         """, """
         evidence(transport(car)).
         """, """
-        query(sex(male)).
         query(age(young)).
         query(education(uni)).
+        query(sex(male)).
         """
     if instance == 1:
         return """
@@ -272,12 +270,33 @@ def print_elapsed_time(start, end):
 
     return float(elapsed_time)
 
+def get_elapsed_time(start, end):
+    """
+    Returns and formats the elapsed time from start to end.\n
+    To get start and end add the following import\n
+    "from timeit import default_timer as timer"\n
+    and call start = timer() at the start and end = timer() at the end
+    :param start: The starting time
+    :param end: The end time
+    :return: The elapsed time in milliseconds
+    """
+    def truncate_float(float_number, decimal_places):
+        multiplier = 10 ** decimal_places
+        return int(float_number * multiplier) / multiplier
 
-def get_openai_client(api_key="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"):
+    elapsed_time = format(truncate_float((end - start) * 1000, 4), ".4f")
+
+    return float(elapsed_time)
+
+
+def get_openai_client(api_key=""):
     """
     Returns the OpenAI client (takes as input the api key).
     """
-    return OpenAI(api_key=api_key)
+    if openai_key != "":
+        return OpenAI(api_key = openai_key)
+    else:
+        return OpenAI(api_key=api_key)
 
 
 def interrogate_4o(client, model, conversation, response_format):
@@ -320,14 +339,15 @@ def print_probability_dict(result):
     Prints the probability dict for the given result.
     :param result: the dict for the probabilistic reasoning computation.
     """
-    result_string = ""
+    result_string = []
 
     for key in result.keys():
-        result_string += str(key) + ": " + str(format(round(result[key], 6), ".6f")) + "\n"
+        result_string.append(str(key) + ": " + str(format(round(result[key], 6), ".6f")))
 
-    result_string = result_string[:-1]
+    result_string.sort()
 
-    print(result_string)
+    for string in result_string:
+        print(string)
 
 
 def plot_values(sk_values, llm_values, model_name):
