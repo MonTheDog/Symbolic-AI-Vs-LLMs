@@ -1,4 +1,6 @@
 import json
+import os
+import matplotlib.pyplot as plt
 from openai import OpenAI
 from problog.logic import Term
 from problog.program import PrologString
@@ -324,3 +326,27 @@ def print_probability_dict(result):
     result_string = result_string[:-1]
 
     print(result_string)
+def plot_values(sk_values, llm_values, model_name):
+    """
+    Plots the values obtained by the Symbolic AI and the LLM.
+    :param sk_values: The values obtained by the Symbolic AI.
+    :param llm_values: The values obtained by the LLM.
+    """
+    bins = range(6000, 10500, 200)  # Intervals from 6000 to 10800 with a 200 step
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6), sharey=True)
+
+    axes[0].hist(sk_values, bins=bins, edgecolor='black', alpha=0.7, color='red')
+    axes[0].set_title("Symbolic AI")
+    axes[0].set_xlabel("Valori")
+    axes[0].set_ylabel("Frequenza")
+    axes[0].grid(axis='y', linestyle='--', alpha=0.7)
+
+    axes[1].hist(llm_values, bins=bins, edgecolor='black', alpha=0.7, color='blue')
+    axes[1].set_title(model_name)
+    axes[1].set_xlabel("Valori")
+    axes[1].grid(axis='y', linestyle='--', alpha=0.7)
+
+    plt.tight_layout()
+    plt.savefig(os.path.join("..", "plots", "values-plot-SAI-vs-" + model_name + ".png"))
+    plt.show()

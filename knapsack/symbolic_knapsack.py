@@ -29,7 +29,7 @@ def calculate_fitness(individual, weights, values, capacity):
         :param weights: The weights of the items
         :param values: The values of the items
         :param capacity: The capacity of the knapsack
-        :return: A list containing the fitness of each individual
+        :return: The fitness of the individual
     """
 
     total_weight = 0
@@ -146,7 +146,7 @@ def run_ga(knapsack_instance):
 
     start = timer()
 
-    number_of_items = len(weights)
+    number_of_items = len(items)
     population = inizialize_population(population_size, number_of_items, weights, values, capacity)
 
     for generation in range(50): # Run the genetic algorithm for 50 generations
