@@ -326,6 +326,8 @@ def print_probability_dict(result):
     result_string = result_string[:-1]
 
     print(result_string)
+
+
 def plot_values(sk_values, llm_values, model_name):
     """
     Plots the values obtained by the Symbolic AI and the LLM.
@@ -348,5 +350,5 @@ def plot_values(sk_values, llm_values, model_name):
     axes[1].grid(axis='y', linestyle='--', alpha=0.7)
 
     plt.tight_layout()
-    plt.savefig(os.path.join("..", "plots", "values-plot-SAI-vs-" + model_name + ".png"))
+    #plt.savefig(os.path.join("..", "plots", "values-plot-SAI-vs-" + model_name + ".png"))
     plt.show()

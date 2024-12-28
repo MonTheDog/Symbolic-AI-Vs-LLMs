@@ -65,4 +65,4 @@ print("Average Elapsed Time: " + str("%.4f" % llm_average_elapsed_time) + "ms")
 print("Average Distance from Optimal Solution: ", llm_average_opt_distance)
 print("Total Invalid Solutions: ", llm_total_invalid_solutions)
 
-utils.plot_values(sk_values, llm_values, model_name)
+#utils.plot_values(sk_values, llm_values, model_name)
