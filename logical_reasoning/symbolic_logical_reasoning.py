@@ -4,7 +4,7 @@ import utils
 from utils import print_elapsed_time
 
 
-def get_knoweldge_base(prolog_script):
+def get_knowledge_base(prolog_script):
     knoweldge_base = Prolog()
 
     # Split the script by '.' (Prolog facts and rules are terminated with '.')
@@ -50,9 +50,3 @@ def solve_logic_problem(kb):
     print_elapsed_time(start, end)
 
 
-# Combine all facts and rules into a single string, including comments
-prolog_script = utils.get_logic_instance()
-
-kb = get_knoweldge_base(prolog_script)
-
-solve_logic_problem(kb)

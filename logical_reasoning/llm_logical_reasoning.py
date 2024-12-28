@@ -8,15 +8,17 @@ import json
 import utils
 from pydantic import BaseModel, ConfigDict
 from typing import List
+from timeit import default_timer as timer
+
 
 """
 Prompt templates and utility functions
 """
 
 INSTRUCTION_PROMPT = """
-Your goal is to solve the following logical inference problem. You will be provided with a knowledge base in Prolog format. The knowledge base can be composed by facts and rules. A fact is written in the format Functor(Name), which means that the property Functor is true for the object Name. A rule is written in the format Functor1(name1) :- Functor2(name2), which means that the property Functor1 is true for the object Name1 if the property Functor2 is true for the object Name2. Facts and rules can contain variables, which starts either with a capital letter or with an underscore.
+Your goal is to solve the following logical inference problem. You will be provided with a knowledge base in Prolog format. The knowledge base can be composed by facts and rules. A fact is written in the format Functor(Name), which means that the property Functor is true for the object Name or Functor(Name1, Name2) which means that Name1 has a relation with Name2 which is called Functor. A rule is written in the format Functor1(name1) :- Functor2(name2), which means that the property Functor1 is true for the object Name1 if the property Functor2 is true for the object Name2. Facts and rules can contain variables, which starts either with a capital letter or with an underscore.
 
-You will be provided with a query written in the same format. If the query does not contain variables, your goal is to determine if it is true or false given the knowledge base. If the query contains variables, your goal is to find all the assignments of values to variables that make the query true. If there is no such assignment, tell that the query is false. In the answer, include a json string with the solution in the form specified below. Include only the json string in the form below, without any additional information. If the query does not contain variables, under the "Assignments" field, provide an empty list.
+You will be provided with a query written in the same format. If the query does not contain variables, your goal is to determine if it is true or false given the knowledge base. If the query contains variables, your goal is to find all the assignments of values to variables that make the query true. If there is no such assignment, tell that the query is false. If there are multiple assignments (such as cases where Functor(X Y) is asked) provide all right ones. In the answer, include a json string with the solution in the form specified below. Include only the json string in the form below, without any additional information. If the query does not contain variables, under the "Assignments" field, provide an empty list.
 """
 
 
@@ -38,14 +40,16 @@ answer: True or False
 assignments:
 [
     {{
-        "X": "Value1",
-        "Y": "Value2", (empty string if the variable is not present in the query),
-        "Z": "Value3" (empty string if the variable is not present in the query),
+        "relation": "Value1", (The relation you are referring to in this assignement)
+        "X": "Value2",
+        "Y": "Value3", (empty string if the variable is not present in the query),
+        "Z": "Value4" (empty string if the variable is not present in the query),
     }},
     {{
-        "X": "Value1",
-        "Y": "Value2", (empty string if the variable is not present in the query),
-        "Z": "Value3" (empty string if the variable is not present in the query),
+        "relation": "Value1", (The relation you are referring to in this assignement)
+        "X": "Value2",
+        "Y": "Value3", (empty string if the variable is not present in the query),
+        "Z": "Value4" (empty string if the variable is not present in the query),
     }},
     ....
 ]
@@ -74,14 +78,16 @@ answer: True or False
 assignments:
 [
     {{
-        "X": "Value1",
-        "Y": "Value2", (empty string if the variable is not present in the query),
-        "Z": "Value3" (empty string if the variable is not present in the query),
+        "relation": "Value1", (The relation you are referring to in this assignement)
+        "X": "Value2",
+        "Y": "Value3", (empty string if the variable is not present in the query),
+        "Z": "Value4" (empty string if the variable is not present in the query),
     }},
     {{
-        "X": "Value1",
-        "Y": "Value2", (empty string if the variable is not present in the query),
-        "Z": "Value3" (empty string if the variable is not present in the query),
+        "relation": "Value1", (The relation you are referring to in this assignement)
+        "X": "Value2",
+        "Y": "Value3", (empty string if the variable is not present in the query),
+        "Z": "Value4" (empty string if the variable is not present in the query),
     }},
     ....
 ]
@@ -119,6 +125,7 @@ Supports up to 3 variables in the query
 """
 
 class LogicalReasoningPrologStyleResponseAssignments(BaseModel):
+    relation: str
     X: str
     Y: str
     Z: str
@@ -224,3 +231,35 @@ class LogicalReasoningPrologStyleLLMAgent:
                 max_moves -= 1
         return False
 
+    def solve_logical_problem(self, kb, query):
+        start = timer()
+        response = self.action_loop(kb, query)
+        if self.model_name == "4o":
+            if response.answer == "True":
+                print("Reasoning: " + response.reasoning)
+                print("Assignments: ")
+                for item in response.assignments:
+                    print(str(item.relation) + ": ", end="")
+                    if item.X != "":
+                        print(str(item.X) + " ", end="")
+                    if item.Y != "":
+                        print(str(item.Y) + " ", end="")
+                    if item.Z != "":
+                        print(str(item.Z) + " ", end="")
+                    print()
+        elif self.model_name == "o1":
+            # Convert from json format the response
+            if response["answer"]:
+                print("Assignments: ")
+                for item in response["assignments"]:
+                    print(str(item["relation"]) + ": ", end="")
+                    if item["X"] != "":
+                        print(str(item["X"]) + " ", end="")
+                    if item["Y"] != "":
+                        print(str(item["Y"]) + " ", end="")
+                    if item["Z"] != "":
+                        print(str(item["Z"]) + " ", end="")
+                    print()
+
+        end = timer()
+        utils.print_elapsed_time(start, end)

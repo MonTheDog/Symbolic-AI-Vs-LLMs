@@ -7,7 +7,7 @@ External Dependencies:
 import json
 from pydantic import BaseModel
 from typing import Dict, Any, List
-
+from timeit import default_timer as timer
 
 """
 Internal Dependencies:
@@ -199,7 +199,6 @@ class ProbabilisticReasoningProblogStyleLLMAgent:
         elif self.model_name == "o1":
             self.update_conversation("user", self.base_prompt.format(INSTRUCTION_PROMPT, bn, evidence, query))
         while max_moves > 0:
-            print(self.conversation)
             is_valid, feedback_message = self.action()
             if is_valid:
                 return is_valid
@@ -207,3 +206,17 @@ class ProbabilisticReasoningProblogStyleLLMAgent:
                 self.update_conversation("user", feedback_message)
                 max_moves -= 1
         return False, "The response does not adhere to the schema after 3 attempts. Please provide another response that adheres to the schema."
+
+    def calculate_probability(self, bn, evidence, query):
+        start = timer()
+        response = self.action_loop(bn, evidence, query)
+        if self.model_name == "4o":
+            for item in response.result:
+                print(str(item.variable) + "(" + str(item.value) + ")" + ": " + str(item.probability))
+        elif self.model_name == "o1":
+            # Convert from json format the response
+            response = json.loads(response)
+            for item in response:
+                print(str(item["variable"]) + "(" + str(item["value"]) + ")" + ": " + str(item["probability"]))
+        end = timer()
+        utils.print_elapsed_time(start, end)

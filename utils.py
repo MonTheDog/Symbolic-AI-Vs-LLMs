@@ -51,7 +51,7 @@ def get_knapsack_instance():
 
 def get_probabilistic_instance(instance = 0):
     if instance == 0:
-        return PrologString("""
+        return """
         0.3::age(young); 0.5::age(adult); 0.2::age(old).
         
         0.6::sex(male); 0.4::sex(female).
@@ -96,15 +96,15 @@ def get_probabilistic_instance(instance = 0):
         0.08::transport(other) :- occupation(self), rent(small).
         0.18::transport(other) :- occupation(employed), rent(big).
         0.09::transport(other) :- occupation(self), rent(big).
-        
+        """, """
         evidence(transport(car)).
-        
+        """, """
         query(sex(male)).
         query(age(young)).
         query(education(uni)).
-        """)
+        """
     if instance == 1:
-        return PrologString("""
+        return """
         0.90::pollution(high); 0.10::pollution(low).
         0.30::smoker(yes); 0.70::smoker(no).
         
@@ -129,15 +129,16 @@ def get_probabilistic_instance(instance = 0):
         
         0.35::dyspnoea(no) :- cancer(yes).
         0.70::dyspnoea(no) :- cancer(no).
-        
+        """, """ 
+        """, """
         query(xray(yes)).
         query(dyspnoea(yes)).
     
         query(xray(no)).
         query(dyspnoea(no)).
-        """)
+        """
     elif instance == 2:
-        return PrologString("""
+        return """
         0.01::burglary(yes); 0.99::burglary(no).
         
         0.02::earthquake(yes); 0.98::earthquake(no).
@@ -163,13 +164,14 @@ def get_probabilistic_instance(instance = 0):
         
         0.30::marycalls(no) :- alarm(yes).
         0.99::marycalls(no) :- alarm(no).
-        
+        """, """ 
+        """, """
         query(johncalls(yes)).
         query(marycalls(yes)).
         
         query(johncalls(no)).
         query(marycalls(no)).
-        """)
+        """
 
 
 def get_logic_instance():
@@ -271,7 +273,7 @@ def print_elapsed_time(start, end):
     return float(elapsed_time)
 
 
-def get_openai_client(api_key="API_KEY"):
+def get_openai_client(api_key="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"):
     """
     Returns the OpenAI client (takes as input the api key).
     """

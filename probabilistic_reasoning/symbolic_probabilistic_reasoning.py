@@ -34,9 +34,15 @@ def get_probability_from_samples(prolog_string, num_samples):
     utils.print_elapsed_time(start, end)
 
 
+def convert_string_to_problog(network, evidence, queries):
+    problog_string = network + evidence + queries
+    return PrologString(problog_string)
+
 if __name__ == '__main__':
 
-    p_survey = utils.get_probabilistic_instance()
+    survey_network, survey_evidence, survey_queries = utils.get_probabilistic_instance()
+
+    p_survey = convert_string_to_problog(survey_network, survey_evidence, survey_queries)
 
     get_true_probability(p_survey)
 
