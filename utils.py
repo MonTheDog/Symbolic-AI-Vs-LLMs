@@ -207,7 +207,7 @@ def get_logic_instance():
     family_superpower(alessia, wind).
     family_superpower(bianca, frost).
     family_superpower(vincenzo, healing).
-    
+        
     gender(tobia, male).
     gender(marta, female).
     gender(asia, female).
@@ -289,7 +289,7 @@ def get_elapsed_time(start, end):
     return float(elapsed_time)
 
 
-def get_openai_client(api_key=""):
+def get_openai_client(api_key="OpenAI KEY HERE"):
     """
     Returns the OpenAI client (takes as input the api key).
     """
@@ -342,7 +342,7 @@ def print_probability_dict(result):
     result_string = []
 
     for key in result.keys():
-        result_string.append(str(key) + ": " + str(format(round(result[key], 6), ".6f")))
+        result_string.append("Probability for " + str(key) + ": " + str(format(round(result[key], 6), ".6f")))
 
     result_string.sort()
 
@@ -374,3 +374,120 @@ def plot_values(sk_values, llm_values, model_name):
     plt.tight_layout()
     #plt.savefig(os.path.join("..", "plots", "values-plot-SAI-vs-" + model_name + ".png"))
     plt.show()
+
+
+def evaluate_llm_responses_logical_reasoning(true_queries, llm_queries):
+    """
+    Evaluates the response given by the llms for the superhero family logical reasoning problem
+    :param true_queries: The true queries solutions for the problem
+    :param llm_queries: The queries returned by the llms
+    :return: the evaluation of the solution in the form of matching cases, mismatching cases, missing cases, added cases and invalid cases
+    """
+    def is_name(token):
+        return token in ["tobia","marta","domenico","carmela","sara","alessia","bianca","vincenzo","giuseppe",
+                         "gerardo","franco","alfredo","andrea","antonio","leonardo","asia","celeste","caterina",
+                         "angela","vittoria"]
+
+    def is_superpower(token):
+        return token in ["superstrength", "clairvoyance", "fire", "invisibility", "poison", "wind", "frost", "healing"]
+
+    def check_validity(llm_validity_queries):
+        invalid_queries = 0
+
+        for llm_query in llm_validity_queries:
+            llm_tokens = llm_query.split(" ")
+            if len(llm_tokens) != 2 and len(llm_tokens) != 3:
+                invalid_queries += 1
+                llm_validity_queries.remove(llm_query)
+            elif llm_tokens[0] == "family_superpower" and len(llm_tokens) != 3:
+                invalid_queries += 1
+                llm_validity_queries.remove(llm_query)
+
+        return invalid_queries
+
+    def check_superpower(superpower, name, llm_superpower_queries):
+        for llm_query in llm_superpower_queries:
+            llm_tokens = llm_query.split(" ")
+            if llm_tokens[0] == "family_superpower":
+                # Since the order of the token is not deterministic with the llm we need to check both cases
+                if is_name(llm_tokens[1]) and is_superpower(llm_tokens[2]):
+                    # Matching Case
+                    if name == llm_tokens[1] and superpower == llm_tokens[2]:
+                        llm_superpower_queries.remove(llm_query)
+                        return 1
+                    # Mismatch Case
+                    elif name == llm_tokens[1] and superpower != llm_tokens[2]:
+                        llm_superpower_queries.remove(llm_query)
+                        return -1
+                elif is_name(llm_tokens[2]) and is_superpower(llm_tokens[1]):
+                    # Matching Case
+                    if name == llm_tokens[2] and superpower == llm_tokens[1]:
+                        llm_superpower_queries.remove(llm_query)
+                        return 1
+                    # Mismatch Case
+                    if name == llm_tokens[2] and superpower != llm_tokens[1]:
+                        llm_superpower_queries.remove(llm_query)
+                        return -1
+
+
+        return 0
+
+    def check_family(family_relation, familiar, llm_family_queries):
+        for llm_query in llm_family_queries:
+            llm_tokens = llm_query.split(" ")
+            if len(llm_tokens) == 2:
+                if family_relation == llm_tokens[0] and familiar == llm_tokens[1]:
+                    # Match
+                    llm_family_queries.remove(llm_query)
+                    return 1
+                elif family_relation == llm_tokens[0] and familiar != llm_tokens[1]:
+                    # Mismatch
+                    llm_family_queries.remove(llm_query)
+                    return -1
+            elif len(llm_tokens) == 3:
+                if family_relation == llm_tokens[0] and (familiar == llm_tokens[1] or familiar == llm_tokens[2]):
+                    # Match
+                    llm_family_queries.remove(llm_query)
+                    return 1
+                elif family_relation == llm_tokens[0] and (familiar != llm_tokens[1] and familiar != llm_tokens[2]):
+                    # Mismatch
+                    llm_family_queries.remove(llm_query)
+                    return -1
+
+        return 0
+
+    matching_cases = 0
+    mismatching_cases = 0
+    missing_cases = 0
+
+    # We remove all invalid cases and count them, so the other checks won't fail
+    invalid_cases = check_validity(llm_queries)
+
+    for query in true_queries:
+        tokens = query.split(" ")
+        if tokens[0] == "family_superpower":
+            superpower_result = check_superpower(tokens[1], tokens[2], llm_queries)
+            if superpower_result == 1:
+                #print("Match super ", tokens[1], tokens[2])
+                matching_cases += 1
+            elif superpower_result == -1:
+                #print("Mismatch super ", tokens[1], tokens[2])
+                mismatching_cases += 1
+            elif superpower_result == 0:
+                #print("Missing super ", tokens[1], tokens[2])
+                missing_cases += 1
+        else:
+            family_result = check_family(tokens[0], tokens[1], llm_queries)
+            if family_result == 1:
+                #print("Match family ", tokens[0], tokens[1])
+                matching_cases += 1
+            elif family_result == -1:
+                #print("Mismatch family ", tokens[0], tokens[1])
+                mismatching_cases += 1
+            elif family_result == 0:
+                #print("Missing family ", tokens[0], tokens[1])
+                missing_cases += 1
+
+    added_cases = len(llm_queries)
+
+    return matching_cases, mismatching_cases, missing_cases, added_cases, invalid_cases

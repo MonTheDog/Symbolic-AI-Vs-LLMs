@@ -4,6 +4,10 @@ import utils
 
 
 def probabilistic_reasoning_runner(run_count):
+    """
+    The runner for the probabilistic reasoning problem
+    :param run_count: The number of runs for this problem
+    """
     network, evidence, queries = utils.get_probabilistic_instance()
     problog_string = sr.convert_string_to_problog(network, evidence, queries)
     llm_4o_agent = llmr.ProbabilisticReasoningProblogStyleLLMAgent("4o")
@@ -57,9 +61,9 @@ def probabilistic_reasoning_runner(run_count):
     distance_symbolic_sex = abs(average_symbolic_sex - true_probabilities["sex(male)"])
 
     print("==================== Symbolic AI ====================")
-    print("age(young): ", str("%.4f" % average_symbolic_age), " Distance from opt: ", str("%.4f" % distance_symbolic_age))
-    print("education(uni): ", str("%.4f" % average_symbolic_education), " Distance from opt: ", str("%.4f" % distance_symbolic_education))
-    print("sex(male): ", str("%.4f" % average_symbolic_sex), " Distance from opt: ", str("%.4f" % distance_symbolic_sex))
+    print("Probability for age(young): ", str("%.4f" % average_symbolic_age), " Distance from opt: ", str("%.4f" % distance_symbolic_age))
+    print("Probability for education(uni): ", str("%.4f" % average_symbolic_education), " Distance from opt: ", str("%.4f" % distance_symbolic_education))
+    print("Probability for sex(male): ", str("%.4f" % average_symbolic_sex), " Distance from opt: ", str("%.4f" % distance_symbolic_sex))
     print("Average Elapsed Time: ", str("%.4f" % average_symbolic_time) + "ms")
 
     average_llm_4o_age = sum(llm_4o_age) / len(llm_4o_age)
@@ -71,9 +75,9 @@ def probabilistic_reasoning_runner(run_count):
     distance_llm_4o_sex = abs(average_llm_4o_sex - true_probabilities["sex(male)"])
 
     print("==================== 4o ====================")
-    print("age(young): ", str("%.4f" % average_llm_4o_age), " Distance from opt: ", str("%.4f" % distance_llm_4o_age))
-    print("education(uni): ", str("%.4f" % average_llm_4o_education), " Distance from opt: ", str("%.4f" % distance_llm_4o_education))
-    print("sex(male): ", str("%.4f" % average_llm_4o_sex), " Distance from opt: ", str("%.4f" % distance_llm_4o_sex))
+    print("Probability for age(young): ", str("%.4f" % average_llm_4o_age), " Distance from opt: ", str("%.4f" % distance_llm_4o_age))
+    print("Probability for education(uni): ", str("%.4f" % average_llm_4o_education), " Distance from opt: ", str("%.4f" % distance_llm_4o_education))
+    print("Probability for sex(male): ", str("%.4f" % average_llm_4o_sex), " Distance from opt: ", str("%.4f" % distance_llm_4o_sex))
     print("Average Elapsed Time: ", str("%.4f" % average_llm_4o_time) + "ms")
 
     average_llm_o1_age = sum(llm_o1_age) / len(llm_o1_age)
@@ -85,9 +89,9 @@ def probabilistic_reasoning_runner(run_count):
     distance_llm_o1_sex = abs(average_llm_o1_sex - true_probabilities["sex(male)"])
 
     print("==================== o1 ====================")
-    print("age(young): ", str("%.4f" % average_llm_o1_age), " Distance from opt: ", str("%.4f" % distance_llm_o1_age))
-    print("education(uni): ", str("%.4f" % average_llm_o1_education), " Distance from opt: ", str("%.4f" % distance_llm_o1_education))
-    print("sex(male): ", str("%.4f" % average_llm_o1_sex), " Distance from opt: ", str("%.4f" % distance_llm_o1_sex))
+    print("Probability for age(young): ", str("%.4f" % average_llm_o1_age), " Distance from opt: ", str("%.4f" % distance_llm_o1_age))
+    print("Probability for education(uni): ", str("%.4f" % average_llm_o1_education), " Distance from opt: ", str("%.4f" % distance_llm_o1_education))
+    print("Probability for sex(male): ", str("%.4f" % average_llm_o1_sex), " Distance from opt: ", str("%.4f" % distance_llm_o1_sex))
     print("Average Elapsed Time: ", str("%.4f" % average_llm_o1_time) + "ms")
 
 

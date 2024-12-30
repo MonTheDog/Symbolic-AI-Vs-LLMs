@@ -43,13 +43,11 @@ assignments:
         "relation": "Value1", (The relation you are referring to in this assignement)
         "X": "Value2",
         "Y": "Value3", (empty string if the variable is not present in the query),
-        "Z": "Value4" (empty string if the variable is not present in the query),
     }},
     {{
         "relation": "Value1", (The relation you are referring to in this assignement)
         "X": "Value2",
         "Y": "Value3", (empty string if the variable is not present in the query),
-        "Z": "Value4" (empty string if the variable is not present in the query),
     }},
     ....
 ]
@@ -81,13 +79,11 @@ assignments:
         "relation": "Value1", (The relation you are referring to in this assignement)
         "X": "Value2",
         "Y": "Value3", (empty string if the variable is not present in the query),
-        "Z": "Value4" (empty string if the variable is not present in the query),
     }},
     {{
         "relation": "Value1", (The relation you are referring to in this assignement)
         "X": "Value2",
         "Y": "Value3", (empty string if the variable is not present in the query),
-        "Z": "Value4" (empty string if the variable is not present in the query),
     }},
     ....
 ]
@@ -128,7 +124,6 @@ class LogicalReasoningPrologStyleResponseAssignments(BaseModel):
     relation: str
     X: str
     Y: str
-    Z: str
 
 
 class LogicalReasoningPrologStyleResponse(BaseModel):
@@ -201,6 +196,24 @@ class LogicalReasoningPrologStyleLLMAgent:
         self.output_schema = LogicalReasoningPrologStyleResponse if model_name == "4o" else None
         self.internal_checking_schema = logical_reasoning_prolog_style_4o_internal_checking_schema if model_name == "4o" else logical_reasoning_prolog_style_o1_internal_checking_schema
 
+    def reset_conversation(self):
+        """
+        Resets the conversation state for a model.
+        """
+        global LOGICAL_REASONING_PROLOG_STYLE_4O_CONVERSATION
+        global LOGICAL_REASONING_PROLOG_STYLE_O1_CONVERSATION
+
+        if self.model_name == "4o":
+            LOGICAL_REASONING_PROLOG_STYLE_4O_CONVERSATION = [
+                {"role": "system",
+                 "content": INSTRUCTION_PROMPT}
+            ]
+            self.conversation = LOGICAL_REASONING_PROLOG_STYLE_4O_CONVERSATION
+        elif self.model_name == "o1":
+            LOGICAL_REASONING_PROLOG_STYLE_O1_CONVERSATION = [ ]
+            self.conversation = LOGICAL_REASONING_PROLOG_STYLE_O1_CONVERSATION
+
+
     def update_conversation(self, role, content):
         self.conversation.append({"role": role, "content": content})
 
@@ -232,34 +245,40 @@ class LogicalReasoningPrologStyleLLMAgent:
         return False
 
     def solve_logical_problem(self, kb, query):
+        result = []
         start = timer()
         response = self.action_loop(kb, query)
         if self.model_name == "4o":
             if response.answer == "True":
-                print("Reasoning: " + response.reasoning)
-                print("Assignments: ")
+                #print("Reasoning: " + response.reasoning)
+                #print("Assignments: ")
                 for item in response.assignments:
-                    print(str(item.relation) + ": ", end="")
+                    #print(str(item.relation) + ": ", end="")
+                    current_string = str(item.relation)
                     if item.X != "":
-                        print(str(item.X) + " ", end="")
+                        #print(str(item.X) + " ", end="")
+                        current_string += " " + str(item.X)
                     if item.Y != "":
-                        print(str(item.Y) + " ", end="")
-                    if item.Z != "":
-                        print(str(item.Z) + " ", end="")
-                    print()
+                        #print(str(item.Y) + " ", end="")
+                        current_string += " " + str(item.Y)
+                    #print()
+                    result.append(current_string)
         elif self.model_name == "o1":
             # Convert from json format the response
             if response["answer"]:
-                print("Assignments: ")
+                #print("Assignments: ")
                 for item in response["assignments"]:
-                    print(str(item["relation"]) + ": ", end="")
+                    #print(str(item["relation"]) + ": ", end="")
+                    current_string = str(item["relation"])
                     if item["X"] != "":
-                        print(str(item["X"]) + " ", end="")
+                        #print(str(item["X"]) + " ", end="")
+                        current_string += " " + str(item["X"])
                     if item["Y"] != "":
-                        print(str(item["Y"]) + " ", end="")
-                    if item["Z"] != "":
-                        print(str(item["Z"]) + " ", end="")
-                    print()
+                        #print(str(item["Y"]) + " ", end="")
+                        current_string += " " + str(item["Y"])
+                    #print()
+                    result.append(current_string)
 
         end = timer()
-        utils.print_elapsed_time(start, end)
+        time = utils.get_elapsed_time(start, end)
+        return result, time

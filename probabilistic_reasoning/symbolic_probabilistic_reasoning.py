@@ -7,6 +7,11 @@ import utils
 
 
 def get_true_probability(prolog_string):
+    """
+    Gets the solution for the given problog string
+    :param prolog_string: The problog string to evaluate
+    :return: A dictionary with the asked queries as keys and the results as items
+    """
     result = get_evaluatable().create_from(prolog_string).evaluate()
     utils.print_probability_dict(result)
     result_dict = dict()
@@ -16,6 +21,12 @@ def get_true_probability(prolog_string):
 
 
 def get_probability_from_samples(prolog_string, num_samples):
+    """
+    Gets the solution for the given problog string by using probability by sampling
+    :param prolog_string: Problog string to evaluate
+    :param num_samples: Number of samples to evaluate
+    :return: A dictionary with the asked queries as keys and the results as items
+    """
     start = timer()
     sample_list = list(sample.sample(prolog_string, n=num_samples, format='dict'))
 
@@ -38,6 +49,13 @@ def get_probability_from_samples(prolog_string, num_samples):
 
 
 def convert_string_to_problog(network, evidence, queries):
+    """
+    Convert three strings to a valid problog string
+    :param network: The bayesian network
+    :param evidence: The evidence
+    :param queries: The queries
+    :return: the problog string
+    """
     problog_string = network + evidence + queries
     return PrologString(problog_string)
 

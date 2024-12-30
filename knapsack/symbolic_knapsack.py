@@ -130,9 +130,8 @@ def generate_valid_individual(number_of_items, weights, values, capacity):
 def run_ga(knapsack_instance):
     """
         Runs the genetic algorithm to solve the knapsack problem.
-        :param weights: The weights of the items
-        :param values: The values of the items
-        :param capacity: The capacity of the knapsack
+        :param knapsack_instance: The knapsack instance to solve
+        :return: The result of the genetic algorithm
     """
 
     items = knapsack_instance["items"]

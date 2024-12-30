@@ -4,6 +4,10 @@ import knapsack.symbolic_knapsack as sk
 from knapsack.llm_knapsack import KnapsackLLMAgent
 
 def knapsack_runner(run_count):
+    """
+    Runner for the knapsack problem
+    :param run_count: The number of runs for this problem
+    """
     knapsack_instance = utils.get_knapsack_instance()  # Obtain the knapsack instance
     print("==================== Optimal Value ====================")
     solution, best_items = ak.get_knapsack_optimal_solution(knapsack_instance)  # Calculate the best solution
